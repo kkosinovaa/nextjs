@@ -14,25 +14,6 @@ export default function RootLayout({
     return (
         <html lang="uk">
         <body>
-        <nav>
-            <ul>
-                <li>
-                    <Link href="/">HomePage</Link>
-                </li>
-
-                <li>
-                    <Link href="/users">Users</Link>
-                </li>
-
-                <li>
-                    <Link href="/posts">Posts</Link>
-                </li>
-
-                <li>
-                    <Link href="/comments">Comments</Link>
-                </li>
-            </ul>
-        </nav>
 
         {children}
         </body>
