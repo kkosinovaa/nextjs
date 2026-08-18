@@ -1,28 +1,54 @@
 "use client";
+import Joi from "joi";
+import {useRouter} from "next/navigation";
+import {useForm} from "react-hook-form";
+import {joiResolver} from "@hookform/resolvers/joi";
 
-import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
 
-export default function CreateCarPage() {
+interface CarFormData {
+    brand: string;
+    price: number;
+    year: number;
+}
+const carSchema = Joi.object({
+    brand: Joi.string().trim().required().messages({
+        "string.empty" : "Поле 'Brand' не може бути порожнім",
+        "any.required" : "Поле є обов'язковим",
+    }),
+
+    price: Joi.number().min(0).max(1000000).required().messages({
+        "number.base": "Ціна повинна бути числом",
+        "number.min": "Ціна не може бути меншою за 0",
+        "number.max": "Ціна не може перевищувати 1000000",
+        "any.required": "Поле 'Price' є обов'язковим",
+    }),
+
+    year: Joi.number().min(1990).max(2026).required().messages({
+        "number.base": "Рік повинен бути числом",
+        "number.min": "Рік не може бути меншим за 1990",
+        "number.max": "Рік не може бути більшим за 2026",
+        "any.required": "Поле 'Year' є обов'язковим",
+    })
+})
+
+export default function CreateCarPage(){
     const router = useRouter();
 
-    const [brand, setBrand] = useState("");
-    const [price, setPrice] = useState("");
-    const [year, setYear] = useState("");
+    const {
+        register,
+        handleSubmit,
+        formState: { errors, isSubmitting },
+    } = useForm<CarFormData>({
+        resolver: joiResolver(carSchema),
+    });
 
-    async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-        event.preventDefault();
-
+    async function onSubmit(data: CarFormData) {
         const response = await fetch("/api/cars", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-                brand,
-                price: Number(price),
-                year: Number(year),
-            }),
+            body: JSON.stringify(data),
         });
 
         if (!response.ok) {
@@ -38,43 +64,51 @@ export default function CreateCarPage() {
         <main>
             <h1>Create car</h1>
 
-            <form onSubmit={handleSubmit}>
-                <div>
+            {/* handleSubmit з react-hook-form автоматично зупиняє preventDefault і викликає нашу onSubmit тільки якщо немає помилок */}
+            <form onSubmit={handleSubmit(onSubmit)}>
+                <div style={{ marginBottom: "1rem" }}>
                     <label>Brand</label>
                     <input
                         type="text"
-                        value={brand}
-                        onChange={(event) => setBrand(event.target.value)}
-                        required
+                        {...register("brand")}
                     />
+                    {/* Відображення помилки */}
+                    {errors.brand && (
+                        <p style={{ color: "red", fontSize: "14px", margin: "5px 0 0" }}>
+                            {errors.brand.message}
+                        </p>
+                    )}
                 </div>
 
-                <div>
+                <div style={{ marginBottom: "1rem" }}>
                     <label>Price</label>
                     <input
                         type="number"
-                        min="0"
-                        max="1000000"
-                        value={price}
-                        onChange={(event) => setPrice(event.target.value)}
-                        required
+                        // { valueAsNumber: true } конвертує введене значення з рядка у число перед валідацією
+                        {...register("price", { valueAsNumber: true })}
                     />
+                    {errors.price && (
+                        <p style={{ color: "red", fontSize: "14px", margin: "5px 0 0" }}>
+                            {errors.price.message}
+                        </p>
+                    )}
                 </div>
 
-                <div>
+                <div style={{ marginBottom: "1rem" }}>
                     <label>Year</label>
                     <input
                         type="number"
-                        min="1990"
-                        max="2026"
-                        value={year}
-                        onChange={(event) => setYear(event.target.value)}
-                        required
+                        {...register("year", { valueAsNumber: true })}
                     />
+                    {errors.year && (
+                        <p style={{ color: "red", fontSize: "14px", margin: "5px 0 0" }}>
+                            {errors.year.message}
+                        </p>
+                    )}
                 </div>
 
-                <button type="submit">
-                    Create car
+                <button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? "Creating..." : "Create car"}
                 </button>
             </form>
         </main>
