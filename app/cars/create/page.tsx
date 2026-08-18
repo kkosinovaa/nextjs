@@ -63,8 +63,6 @@ export default function CreateCarPage(){
     return (
         <main>
             <h1>Create car</h1>
-
-            {/* handleSubmit з react-hook-form автоматично зупиняє preventDefault і викликає нашу onSubmit тільки якщо немає помилок */}
             <form onSubmit={handleSubmit(onSubmit)}>
                 <div style={{ marginBottom: "1rem" }}>
                     <label>Brand</label>
@@ -72,7 +70,6 @@ export default function CreateCarPage(){
                         type="text"
                         {...register("brand")}
                     />
-                    {/* Відображення помилки */}
                     {errors.brand && (
                         <p style={{ color: "red", fontSize: "14px", margin: "5px 0 0" }}>
                             {errors.brand.message}
@@ -84,7 +81,6 @@ export default function CreateCarPage(){
                     <label>Price</label>
                     <input
                         type="number"
-                        // { valueAsNumber: true } конвертує введене значення з рядка у число перед валідацією
                         {...register("price", { valueAsNumber: true })}
                     />
                     {errors.price && (
